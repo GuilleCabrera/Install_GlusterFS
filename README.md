@@ -114,3 +114,52 @@ e2fc3482-8d80-46c7-bf34-5be4d97524ea    test-gluster03  Connected
 ```
 
 
+- Creando un Volumen Distributed
+
+```
+[root@test-gluster01 ~]# gluster volume create distribuido test-gluster01:/storage01/distribuido  test-gluster02:/storage01/distribuido  test-gluster03:/storage01/distribuido  force
+volume create: distribuido: success: please start the volume to access data
+```
+
+Iniciamos Volumen
+
+```
+[root@test-gluster01 ~]# gluster volume start distribuido
+volume start: distribuido: success
+```
+
+Revisamos la configuración del Volumen:
+
+```
+[root@test-gluster01 ~]# gluster volume info distribuido
+
+Volume Name: distribuido
+Type: Distribute
+Volume ID: 4227163c-7d65-4499-9d71-d33cad4f51f7
+Status: Started
+Snapshot Count: 0
+Number of Bricks: 3
+Transport-type: tcp
+Bricks:
+Brick1: test-gluster01:/storage01/distribuido
+Brick2: test-gluster02:/storage01/distribuido
+Brick3: test-gluster03:/storage01/distribuido
+Options Reconfigured:
+transport.address-family: inet
+nfs.disable: on
+```
+
+```
+[root@test-gluster01 ~]# gluster volume status
+Status of volume: distribuido
+Gluster process                             TCP Port  RDMA Port  Online  Pid
+------------------------------------------------------------------------------
+Brick test-gluster01:/storage01/distribuido 49152     0          Y       17979
+Brick test-gluster02:/storage01/distribuido 49153     0          Y       5710
+Brick test-gluster03:/storage01/distribuido 49152     0          Y       29329
+
+Task Status of Volume distribuido
+------------------------------------------------------------------------------
+There are no active volume tasks
+
+````
