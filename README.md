@@ -162,4 +162,283 @@ Task Status of Volume distribuido
 ------------------------------------------------------------------------------
 There are no active volume tasks
 
-````
+```
+
+Prueba de Escritura
+
+```
+[root@test-client ~]# mount.glusterfs test-gluster02:/distribuido /distribuido
+[root@test-client ~]#cd /distribuido
+[root@test-client distribuido]# df -h .
+Filesystem                   Size  Used Avail Use% Mounted on
+test-gluster02:/distribuido   60G  711M   60G   2% /distribuido
+[root@test-client distribuido]#
+```
+
+
+[root@test-client distribuido]#  for i in {1..5}; do echo $i; dd if=/dev/zero of=/distribuido/$i bs=1M count=10; done
+1
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.0925937 s, 113 MB/s
+2
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.0966392 s, 109 MB/s
+3
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.0923655 s, 114 MB/s
+4
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.092546 s, 113 MB/s
+5
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.0941752 s, 111 MB/s
+[root@test-client distribuido]# ls
+1  2  3  4  5
+
+
+[root@test-gluster01 distribuido]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G   63M   20G   1% /storage01
+[root@test-gluster01 distribuido]# ls
+2  3  4
+[root@test-gluster01 distribuido]#
+
+
+[root@test-gluster02 distribuido]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G   53M   20G   1% /storage01
+[root@test-gluster02 distribuido]# ls
+1  5
+[root@test-gluster02 distribuido]#
+
+
+
+[root@test-gluster03 distribuido]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G   33M   20G   1% /storage01
+[root@test-gluster03 distribuido]#
+
+
+
+
+
+
+[root@test-gluster01 /]# gluster volume create replica test-gluster01:/storage01/replica  test-gluster02:/storage01/replica  test-gluster03:/storage01/replica  force
+
+
+
+[root@test-gluster01 /]# gluster volume create vol-replica replica 3 test-gluster01:/storage01/replica  test-gluster02:/storage01/replica  test-gluster03:/storage01/replica  force
+volume create: vol-replica: success: please start the volume to access data
+[root@test-gluster01 /]# gluster volume start vol-replica
+volume start: vol-replica: success
+[root@test-gluster01 /]#
+
+
+
+
+[root@test-gluster01 /]# gluster volume info vol-replica
+
+Volume Name: vol-replica
+Type: Replicate
+Volume ID: 91ec5d2c-e576-4223-a726-5194c9be3e46
+Status: Started
+Snapshot Count: 0
+Number of Bricks: 1 x 3 = 3
+Transport-type: tcp
+Bricks:
+Brick1: test-gluster01:/storage01/replica
+Brick2: test-gluster02:/storage01/replica
+Brick3: test-gluster03:/storage01/replica
+Options Reconfigured:
+transport.address-family: inet
+nfs.disable: on
+performance.client-io-threads: off
+[root@test-gluster01 /]#
+
+
+[root@test-gluster01 /]# gluster volume status vol-replica
+Status of volume: vol-replica
+Gluster process                             TCP Port  RDMA Port  Online  Pid
+------------------------------------------------------------------------------
+Brick test-gluster01:/storage01/replica     49153     0          Y       24428
+Brick test-gluster02:/storage01/replica     49154     0          Y       12188
+Brick test-gluster03:/storage01/replica     49153     0          Y       3366
+Self-heal Daemon on localhost               N/A       N/A        Y       24451
+Self-heal Daemon on test-gluster02          N/A       N/A        Y       12211
+Self-heal Daemon on test-gluster03          N/A       N/A        Y       3389
+
+Task Status of Volume vol-replica
+------------------------------------------------------------------------------
+There are no active volume tasks
+
+[root@test-gluster01 /]# g
+
+
+
+[root@test-client /]# mount.glusterfs test-gluster02:/vol-replica /vol-replica
+[root@test-client /]# cd /vol-replica/
+[root@test-client vol-replica]# df -h .
+Filesystem                   Size  Used Avail Use% Mounted on
+test-gluster02:/vol-replica   20G  288M   20G   2% /vol-replica
+[root@test-client vol-replica]#
+
+
+[root@test-client vol-replica]# for i in {1..5}; do echo $i; dd if=/dev/zero of=/vol-replica/$i bs=1M count=10; done
+1
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.280331 s, 37.4 MB/s
+2
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.27788 s, 37.7 MB/s
+3
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.291392 s, 36.0 MB/s
+4
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.294086 s, 35.7 MB/s
+5
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.30615 s, 34.3 MB/s
+[root@test-client vol-replica]#
+
+
+[root@test-gluster01 replica]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G  133M   20G   1% /storage01
+[root@test-gluster01 replica]# ls
+1  2  3  4  5
+[root@test-gluster01 replica]#
+
+
+
+[root@test-gluster02 replica]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G  123M   20G   1% /storage01
+[root@test-gluster02 replica]# ls
+1  2  3  4  5
+[root@test-gluster02 replica]#
+
+
+[root@test-gluster03 replica]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G   93M   20G   1% /storage01
+[root@test-gluster03 replica]# ls
+1  2  3  4  5
+[root@test-gluster03 replica]#
+
+
+
+
+
+[root@test-gluster01 /]# gluster volume create vol-stripe strip 3 test-gluster01:/storage01/stripe  test-gluster02:/storage01/stripe  test-gluster03:/storage01/stripe  force
+volume create: vol-stripe: success: please start the volume to access data
+[root@test-gluster01 /]# gluster volume start vol-stripe
+volume start: vol-stripe: success
+[root@test-gluster01 /]#
+
+
+
+
+
+[root@test-gluster01 /]# gluster volume info vol-stripe
+
+Volume Name: vol-stripe
+Type: Stripe
+Volume ID: c464b1d3-795f-4dc5-861e-8cdc907a8d61
+Status: Started
+Snapshot Count: 0
+Number of Bricks: 1 x 3 = 3
+Transport-type: tcp
+Bricks:
+Brick1: test-gluster01:/storage01/stripe
+Brick2: test-gluster02:/storage01/stripe
+Brick3: test-gluster03:/storage01/stripe
+Options Reconfigured:
+transport.address-family: inet
+nfs.disable: on
+[root@test-gluster01 /]#
+
+
+
+[root@test-gluster01 /]# gluster volume status vol-stripe
+Status of volume: vol-stripe
+Gluster process                             TCP Port  RDMA Port  Online  Pid
+------------------------------------------------------------------------------
+Brick test-gluster01:/storage01/stripe      49154     0          Y       24915
+Brick test-gluster02:/storage01/stripe      49155     0          Y       12673
+Brick test-gluster03:/storage01/stripe      49154     0          Y       3850
+
+Task Status of Volume vol-stripe
+------------------------------------------------------------------------------
+There are no active volume tasks
+
+[root@test-gluster01 /]#
+
+
+[root@test-client /]# mount.glusterfs test-gluster02:/vol-stripe /vol-stripe
+[root@test-client /]# cd /vol-stripe
+[root@test-client vol-stripe]# ls
+[root@test-client vol-stripe]# df -h .
+Filesystem                  Size  Used Avail Use% Mounted on
+test-gluster02:/vol-stripe   60G  962M   60G   2% /vol-stripe
+[root@test-client vol-stripe]#
+
+
+
+[root@test-client vol-stripe]# for i in {1..5}; do echo $i; dd if=/dev/zero of=/vol-stripe/$i bs=1M count=10; done
+1
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.094852 s, 111 MB/s
+2
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.0924988 s, 113 MB/s
+3
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.093898 s, 112 MB/s
+4
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.0927106 s, 113 MB/s
+5
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB) copied, 0.093105 s, 113 MB/s
+[root@test-client vol-stripe]#
+
+
+
+[root@test-gluster01 stripe]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G  150M   20G   1% /storage01
+[root@test-gluster01 stripe]# ls
+1  2  3  4  5
+[root@test-gluster01 stripe]#
+
+
+[root@test-gluster02 stripe]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G  140M   20G   1% /storage01
+[root@test-gluster02 stripe]# ls
+1  2  3  4  5
+[root@test-gluster02 stripe]#
+
+
+[root@test-gluster03 stripe]# df -h .
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg01-lv00   20G  109M   20G   1% /storage01
+[root@test-gluster03 stripe]# ls
+1  2  3  4  5
+[root@test-gluster03 stripe]#
